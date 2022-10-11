@@ -2,6 +2,7 @@ package helper
 
 import (
 	"diary_api/model"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -21,17 +22,23 @@ func GenerateJWT(user model.User) (string, error) {
 		"iat": time.Now().Unix(),
 		"eat": time.Now().Add(time.Second * time.Duration(tokenTTL)).Unix(),
 	})
-	return token.SignedString([]byte(os.Getenv("JWT_PRIVATE_KEY")))
+	return token.SignedString(privateKey)
 }
 
 func ValidateJWT(context *gin.Context) error {
 	token, err := getToken(context)
 
-	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+	if err != nil {
+		return err
+	}
+
+	_, ok := token.Claims.(jwt.MapClaims)
+
+	if ok && token.Valid {
 		return nil
 	}
 
-	return err
+	return errors.New("invalid token provided")
 }
 
 
