@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"diary_api/helper"
 	"diary_api/model"
 	"net/http"
 
@@ -15,18 +14,21 @@ func AddEntry(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	// user, err := helper.CurrentUser(context)
+	// if err != nil {
+	// 	context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 	return
+	// }
 
-	user, err := helper.CurrentUser(context)
-
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	// user has been set in auth middleware
+	user, ok := context.MustGet("user").(*model.User)
+	if !ok {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "An error occured internally"})
 	}
 
 	input.UserID = user.ID
 
 	savedEntry, err := input.Save()
-
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -36,12 +38,16 @@ func AddEntry(context *gin.Context) {
 }
 
 func GetAllEntries(context *gin.Context) {
+	// user, err := helper.CurrentUser(context)
+	// if err != nil {
+	// 	context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 	return
+	// }
 
-	user, err := helper.CurrentUser(context)
-
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	// user has been set in auth middleware
+	user, ok := context.MustGet("user").(*model.User)
+	if !ok {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "An error occured internally"})
 	}
 
 	context.JSON(http.StatusOK, gin.H{"data": user.Entries})
